@@ -55,6 +55,7 @@ export default function CartPage() {
 
       setCartItems(items);
       console.log(`✅ ${items.length}개 아이템 조회 성공`);
+      setLoading(false);
     } catch (error) {
       console.error("❌ 장바구니 조회 실패:", error);
     } finally {
