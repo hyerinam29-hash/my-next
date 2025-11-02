@@ -12,15 +12,17 @@ import { Button } from "@/components/ui/button";
  * 카테고리 네비게이션과 베스트 상품 섹션을 포함합니다.
  */
 
-// 카테고리 한글 매핑
+// 시니어 영양제 카테고리 한글 매핑
 const categoryMap: Record<string, string> = {
-  electronics: "전자제품",
-  clothing: "의류",
-  books: "도서",
-  food: "식품",
-  sports: "스포츠",
-  beauty: "뷰티",
-  home: "생활/가정",
+  "Joint & Bone Health": "관절/뼈 건강",
+  "Immune Support": "면역 지원",
+  "Multivitamin & Mineral": "종합 비타민/미네랄",
+  "Cognitive & Memory": "인지/기억력",
+  "Heart Health": "심장 건강",
+  "Digestive Health": "소화 건강",
+  "Eye Health": "눈 건강",
+  "Sleep & Stress": "수면/스트레스",
+  "Energy & Vitality": "에너지/활력",
 };
 
 export default async function Home() {
@@ -72,12 +74,12 @@ export default async function Home() {
       <div className="max-w-7xl mx-auto">
         {/* 헤더 섹션 */}
         <section className="mb-12 text-center">
-          <h1 className="text-4xl lg:text-5xl font-bold mb-4">
-            쇼핑몰에 오신 것을 환영합니다
-          </h1>
-          <p className="text-lg text-muted-foreground">
-            다양한 상품을 만나보세요
-          </p>
+              <h1 className="text-4xl lg:text-5xl font-bold mb-4">
+                시니어 영양제 쇼핑몰
+              </h1>
+              <p className="text-lg text-muted-foreground">
+                건강하고 활기찬 노후 생활을 위한 전문 영양제
+              </p>
         </section>
 
         {/* 카테고리 네비게이션 */}

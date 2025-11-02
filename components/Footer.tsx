@@ -16,9 +16,9 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* 브랜드 섹션 */}
           <div className="flex flex-col gap-4">
-            <h3 className="text-xl font-bold">SaaS Template</h3>
+            <h3 className="text-xl font-bold">시니어 영양제 쇼핑몰</h3>
             <p className="text-sm text-muted-foreground">
-              Next.js, Clerk, Supabase로 구동되는 쇼핑몰 템플릿입니다.
+              건강하고 활기찬 노후 생활을 위한 전문 영양제 쇼핑몰입니다.
             </p>
           </div>
 
