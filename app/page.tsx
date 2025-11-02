@@ -1,41 +1,74 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { RiSupabaseFill } from "react-icons/ri";
+import { supabase } from "@/lib/supabase/client";
+import ProductCard from "@/components/product-card";
+import type { Product } from "@/types/product";
 
-export default function Home() {
+/**
+ * @file app/page.tsx
+ * @description 홈페이지 - 상품 목록 그리드 레이아웃
+ *
+ * Supabase에서 활성화된 상품을 가져와서 반응형 그리드 레이아웃으로 표시합니다.
+ */
+
+export default async function Home() {
+  console.group("🏠 홈페이지 상품 목록 조회 시작");
+
+  let products: Product[] = [];
+
+  try {
+    console.log("📦 Supabase에서 상품 데이터 조회 중...");
+    
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .limit(20); // 최대 20개 상품만 표시
+
+    if (error) {
+      console.error("❌ 상품 조회 실패:", error);
+      throw error;
+    }
+
+    products = (data as Product[]) || [];
+    console.log(`✅ ${products.length}개의 상품 조회 성공`);
+    console.log("📋 상품 목록:", products.map((p) => ({ id: p.id, name: p.name })));
+  } catch (error) {
+    console.error("❌ 상품 데이터 로드 중 오류 발생:", error);
+    // 에러가 발생해도 빈 배열로 처리하여 페이지는 정상 렌더링
+  }
+
+  console.groupEnd();
+
   return (
-    <main className="min-h-[calc(100vh-80px)] flex items-center px-8 py-16 lg:py-24">
-      <section className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start lg:items-center">
-        {/* 좌측: 환영 메시지 */}
-        <div className="flex flex-col gap-8">
-          <h1 className="text-5xl lg:text-7xl font-bold leading-tight">
-            SaaS 앱 템플릿에 오신 것을 환영합니다
+    <main className="min-h-[calc(100vh-80px)] px-4 py-8 lg:py-12">
+      <div className="max-w-7xl mx-auto">
+        {/* 헤더 섹션 */}
+        <section className="mb-12 text-center">
+          <h1 className="text-4xl lg:text-5xl font-bold mb-4">
+            쇼핑몰에 오신 것을 환영합니다
           </h1>
-          <p className="text-xl lg:text-2xl text-gray-600 dark:text-gray-400 leading-relaxed">
-            Next.js, Shadcn, Clerk, Supabase, TailwindCSS로 구동되는 완전한
-            기능의 템플릿으로 다음 프로젝트를 시작하세요.
+          <p className="text-lg text-muted-foreground">
+            다양한 상품을 만나보세요
           </p>
-        </div>
+        </section>
 
-        {/* 우측: 버튼 두 개 세로 정렬 */}
-        <div className="flex flex-col gap-6">
-          <Link href="/storage-test" className="w-full">
-            <Button className="w-full h-28 flex items-center justify-center gap-4 text-xl shadow-lg hover:shadow-xl transition-shadow">
-              <RiSupabaseFill className="w-8 h-8" />
-              <span>Storage 파일 업로드 테스트</span>
-            </Button>
-          </Link>
-          <Link href="/auth-test" className="w-full">
-            <Button
-              className="w-full h-28 flex items-center justify-center gap-4 text-xl shadow-lg hover:shadow-xl transition-shadow"
-              variant="outline"
-            >
-              <RiSupabaseFill className="w-8 h-8" />
-              <span>Clerk + Supabase 인증 연동</span>
-            </Button>
-          </Link>
-        </div>
-      </section>
+        {/* 상품 목록 그리드 */}
+        {products.length > 0 ? (
+          <section>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+              {products.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </section>
+        ) : (
+          <section className="text-center py-16">
+            <p className="text-muted-foreground">
+              현재 등록된 상품이 없습니다.
+            </p>
+          </section>
+        )}
+      </div>
     </main>
   );
 }
