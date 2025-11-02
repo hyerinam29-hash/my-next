@@ -27,9 +27,19 @@ export default function ProductCard({ product, className }: ProductCardProps) {
       "group flex flex-col bg-card border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer block",
       className
     )}>
-      {/* Placeholder 이미지 */}
+      {/* Unsplash 이미지 */}
       <div className="w-full aspect-square bg-muted flex items-center justify-center relative overflow-hidden">
-        <ImageIcon className="w-16 h-16 text-muted-foreground/50" />
+        <img
+          src={`https://source.unsplash.com/400x400/?supplement,${encodeURIComponent(product.category.toLowerCase().replace(' & ', ' '))},health`}
+          alt={product.name}
+          className="w-full h-full object-cover"
+          loading="lazy"
+          onError={(e) => {
+            // Fallback to placeholder if image fails to load
+            const target = e.target as HTMLImageElement;
+            target.src = `https://via.placeholder.com/400x400/6366f1/ffffff?text=${encodeURIComponent(product.name)}`;
+          }}
+        />
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
       </div>
 

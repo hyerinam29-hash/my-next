@@ -34,21 +34,27 @@ export default async function Home() {
 
   try {
     console.log("📦 Supabase에서 상품 데이터 조회 중...");
-    
-    // 전체 상품 조회
+
+    // 전체 상품 조회 (is_active 필드가 없으므로 모든 상품 조회)
     const { data: allProductsData, error: allProductsError } = await supabase
       .from("products")
       .select("*")
-      .eq("is_active", true)
       .order("created_at", { ascending: false });
 
     if (allProductsError) {
       console.error("❌ 상품 조회 실패:", allProductsError);
+      console.error("❌ 상세 에러:", JSON.stringify(allProductsError, null, 2));
+
+      // 테이블이 존재하지 않는 경우 더 명확한 메시지
+      if (allProductsError.message?.includes('relation "public.products" does not exist')) {
+        console.error("🚨 products 테이블이 존재하지 않습니다. Supabase에서 SQL 마이그레이션을 실행해주세요.");
+      }
+
       throw allProductsError;
     }
 
     products = (allProductsData as Product[]) || [];
-    
+
     // 카테고리 추출
     const uniqueCategories = Array.from(
       new Set(products.map((p) => p.category).filter(Boolean))
@@ -65,6 +71,14 @@ export default async function Home() {
     console.log("🏆 베스트 상품:", bestProducts.map((p) => p.name));
   } catch (error) {
     console.error("❌ 상품 데이터 로드 중 오류 발생:", error);
+
+    // 사용자에게 더 명확한 오류 메시지 표시를 위한 로그
+    if (error && typeof error === 'object' && 'message' in error) {
+      const errorMessage = (error as any).message;
+      if (errorMessage?.includes('relation "public.products" does not exist')) {
+        console.error("🔧 해결 방법: Supabase 대시보드에서 migration.sql 파일의 SQL을 실행하세요.");
+      }
+    }
   }
 
   console.groupEnd();
