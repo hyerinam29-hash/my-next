@@ -7,9 +7,20 @@ const Navbar = () => {
   return (
     <header className="flex justify-between items-center p-4 gap-4 h-16 max-w-7xl mx-auto">
       <Link href="/" className="text-2xl font-bold">
-        SaaS Template
+        쇼핑몰
       </Link>
-      <div className="flex gap-4 items-center">
+      <nav className="flex gap-4 items-center">
+        <Link href="/products">
+          <Button variant="ghost">상품</Button>
+        </Link>
+        <SignedIn>
+          <Link href="/cart">
+            <Button variant="ghost">장바구니</Button>
+          </Link>
+          <Link href="/orders">
+            <Button variant="ghost">주문내역</Button>
+          </Link>
+        </SignedIn>
         <SignedOut>
           <SignInButton mode="modal">
             <Button>로그인</Button>
@@ -18,7 +29,7 @@ const Navbar = () => {
         <SignedIn>
           <UserButton />
         </SignedIn>
-      </div>
+      </nav>
     </header>
   );
 };
