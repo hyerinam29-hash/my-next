@@ -23,13 +23,10 @@ export default function ProductCard({ product, className }: ProductCardProps) {
   }).format(Number(product.price));
 
   return (
-    <Link href={`/products/${product.id}`}>
-      <div
-        className={cn(
-          "group flex flex-col bg-card border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer",
-          className
-        )}
-      >
+    <Link href={`/products/${product.id}`} className={cn(
+      "group flex flex-col bg-card border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer block",
+      className
+    )}>
       {/* Placeholder 이미지 */}
       <div className="w-full aspect-square bg-muted flex items-center justify-center relative overflow-hidden">
         <ImageIcon className="w-16 h-16 text-muted-foreground/50" />
