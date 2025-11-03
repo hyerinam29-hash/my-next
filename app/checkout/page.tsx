@@ -1,30 +1,42 @@
 "use client";
 
+/**
+ * @file app/checkout/page.tsx
+ * @description 주문하기 페이지
+ *
+ * 이 페이지는 장바구니에 담긴 상품을 주문하는 페이지입니다.
+ * 사용자는 배송 정보와 주문 메모를 입력하고 주문을 생성합니다.
+ *
+ * 주요 기능:
+ * 1. 장바구니 아이템 조회 및 표시
+ * 2. 배송 정보 입력 폼 (이름, 전화번호, 주소, 우편번호, 상세주소)
+ * 3. 주문 메모 입력 (선택사항)
+ * 4. 주문 생성 (Server Action 사용)
+ *
+ * @dependencies
+ * - @clerk/nextjs: Clerk 인증 (useAuth)
+ * - @/actions/cart: 장바구니 조회 (getCartItems)
+ * - @/actions/order: 주문 생성 (createOrder)
+ */
+
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
-import { useClerkSupabaseClient } from "@/lib/supabase/clerk-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import Link from "next/link";
-import type { Product } from "@/types/product";
 import { useRouter } from "next/navigation";
-
-interface CartItem {
-  id: string;
-  product_id: string;
-  quantity: number;
-  product: Product;
-}
+import { getCartItems, type CartItem } from "@/actions/cart";
+import { createOrder, type ShippingAddress } from "@/actions/order";
 
 export default function CheckoutPage() {
-  const { userId, isSignedIn } = useAuth();
-  const supabase = useClerkSupabaseClient();
+  const { isSignedIn } = useAuth();
   const router = useRouter();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -35,108 +47,77 @@ export default function CheckoutPage() {
   });
 
   useEffect(() => {
-    if (isSignedIn && userId) {
+    if (isSignedIn) {
       loadCartItems();
     } else {
       setLoading(false);
       router.push("/sign-in");
     }
-  }, [isSignedIn, userId]);
+  }, [isSignedIn]);
 
   const loadCartItems = async () => {
-    if (!userId) return;
+    console.group("🛒 [Checkout] 장바구니 조회");
 
     try {
-      const { data, error } = await supabase
-        .from("cart_items")
-        .select(`
-          *,
-          product:products(*)
-        `)
-        .eq("clerk_id", userId);
+      const result = await getCartItems();
 
-      if (error) throw error;
-
-      const items = (data || []).map((item: any) => ({
-        id: item.id,
-        product_id: item.product_id,
-        quantity: item.quantity,
-        product: item.product as Product,
-      }));
-
-      setCartItems(items);
+      if (result.success && result.data) {
+        setCartItems(result.data);
+        console.log(`✅ ${result.data.length}개 아이템 조회 성공`);
+      } else {
+        console.error("❌ 장바구니 조회 실패:", result.error);
+        setCartItems([]);
+      }
     } catch (error) {
-      console.error("❌ 장바구니 조회 실패:", error);
+      console.error("❌ 장바구니 조회 중 오류 발생:", error);
+      setCartItems([]);
     } finally {
       setLoading(false);
+      console.groupEnd();
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userId) return;
-
+    setError(null);
     setSubmitting(true);
-    console.group("💳 주문 처리 시작");
+    console.group("💳 [Checkout] 주문 처리 시작");
 
     try {
-      const totalAmount = cartItems.reduce(
-        (sum, item) => sum + Number(item.product.price) * item.quantity,
-        0
-      );
+      // 배송 정보 구성
+      const shippingAddress: ShippingAddress = {
+        name: formData.name,
+        phone: formData.phone,
+        address: formData.address,
+        addressDetail: formData.addressDetail,
+        postalCode: formData.postalCode,
+      };
 
-      // 주문 생성
-      const { data: order, error: orderError } = await supabase
-        .from("orders")
-        .insert({
-          clerk_id: userId,
-          total_amount: totalAmount,
-          status: "pending",
-          shipping_address: {
-            name: formData.name,
-            phone: formData.phone,
-            address: formData.address,
-            addressDetail: formData.addressDetail,
-            postalCode: formData.postalCode,
-          },
-          order_note: formData.note,
-        })
-        .select()
-        .single();
+      // 주문 생성 (Server Action)
+      const result = await createOrder({
+        shippingAddress,
+        orderNote: formData.note || undefined,
+      });
 
-      if (orderError) throw orderError;
-      console.log("✅ 주문 생성 성공:", order.id);
+      if (!result.success) {
+        console.error("❌ 주문 생성 실패:", result.error);
+        setError(result.error);
+        return;
+      }
 
-      // 주문 아이템 생성
-      const orderItems = cartItems.map((item) => ({
-        order_id: order.id,
-        product_id: item.product_id,
-        product_name: item.product.name,
-        quantity: item.quantity,
-        price: item.product.price,
-      }));
-
-      const { error: itemsError } = await supabase
-        .from("order_items")
-        .insert(orderItems);
-
-      if (itemsError) throw itemsError;
-      console.log("✅ 주문 아이템 생성 성공");
-
-      // 장바구니 비우기
-      const { error: deleteError } = await supabase
-        .from("cart_items")
-        .delete()
-        .eq("clerk_id", userId);
-
-      if (deleteError) throw deleteError;
-      console.log("✅ 장바구니 비우기 성공");
+      console.log("✅ 주문 생성 성공:", result.data?.orderId);
 
       // 결제 페이지로 이동
-      router.push(`/payment/${order.id}`);
+      if (result.data?.orderId) {
+        router.push(`/payment/${result.data.orderId}`);
+      }
     } catch (error) {
-      console.error("❌ 주문 처리 실패:", error);
-      alert("주문 처리에 실패했습니다.");
+      console.error("❌ 주문 처리 중 예외 발생:", error);
+      setError(
+        error instanceof Error
+          ? error.message
+          : "주문 처리에 실패했습니다. 다시 시도해주세요."
+      );
     } finally {
       setSubmitting(false);
       console.groupEnd();
@@ -272,8 +253,15 @@ export default function CheckoutPage() {
                 setFormData({ ...formData, note: e.target.value })
               }
               className="mt-2"
+              placeholder="배송 요청사항이나 메모를 입력해주세요"
             />
           </section>
+
+          {error && (
+            <div className="border border-red-500 bg-red-50 rounded-lg p-4">
+              <p className="text-red-700">{error}</p>
+            </div>
+          )}
 
           <div className="flex gap-4">
             <Link href="/cart" className="flex-1">

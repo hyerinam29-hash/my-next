@@ -2,62 +2,44 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@clerk/nextjs";
-import { useClerkSupabaseClient } from "@/lib/supabase/clerk-client";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import type { Product } from "@/types/product";
-import { useRouter } from "next/navigation";
-
-interface CartItem {
-  id: string;
-  product_id: string;
-  quantity: number;
-  product: Product;
-}
+import {
+  getCartItems,
+  updateCartItem,
+  removeCartItem,
+  type CartItem,
+} from "@/actions/cart";
 
 export default function CartPage() {
-  const { userId, isSignedIn } = useAuth();
-  const supabase = useClerkSupabaseClient();
-  const router = useRouter();
+  const { isSignedIn } = useAuth();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (isSignedIn && userId) {
+    if (isSignedIn) {
       loadCartItems();
     } else {
       setLoading(false);
     }
-  }, [isSignedIn, userId]);
+  }, [isSignedIn]);
 
   const loadCartItems = async () => {
-    if (!userId) return;
-
     console.group("🛒 장바구니 조회");
 
     try {
-      const { data, error } = await supabase
-        .from("cart_items")
-        .select(`
-          *,
-          product:products(*)
-        `)
-        .eq("clerk_id", userId);
+      const result = await getCartItems();
 
-      if (error) throw error;
-
-      const items = (data || []).map((item: any) => ({
-        id: item.id,
-        product_id: item.product_id,
-        quantity: item.quantity,
-        product: item.product as Product,
-      }));
-
-      setCartItems(items);
-      console.log(`✅ ${items.length}개 아이템 조회 성공`);
-      setLoading(false);
+      if (result.success && result.data) {
+        setCartItems(result.data);
+        console.log(`✅ ${result.data.length}개 아이템 조회 성공`);
+      } else {
+        console.error("❌ 장바구니 조회 실패:", result.error);
+        setCartItems([]);
+      }
     } catch (error) {
-      console.error("❌ 장바구니 조회 실패:", error);
+      console.error("❌ 장바구니 조회 중 오류 발생:", error);
+      setCartItems([]);
     } finally {
       setLoading(false);
       console.groupEnd();
@@ -70,17 +52,21 @@ export default function CartPage() {
     console.log("📝 수량 변경:", { itemId, newQuantity });
 
     try {
-      const { error } = await supabase
-        .from("cart_items")
-        .update({ quantity: newQuantity })
-        .eq("id", itemId);
+      const result = await updateCartItem(itemId, newQuantity);
 
-      if (error) throw error;
-
-      await loadCartItems();
+      if (result.success) {
+        console.log("✅ 수량 변경 성공");
+        await loadCartItems();
+        
+        // Navbar에 장바구니 변경 알림 (실시간 갱신)
+        window.dispatchEvent(new CustomEvent("cart-updated"));
+      } else {
+        console.error("❌ 수량 변경 실패:", result.error);
+        alert(result.error || "수량 변경에 실패했습니다.");
+      }
     } catch (error) {
-      console.error("❌ 수량 변경 실패:", error);
-      alert("수량 변경에 실패했습니다.");
+      console.error("❌ 수량 변경 중 오류 발생:", error);
+      alert("수량 변경에 실패했습니다. 다시 시도해주세요.");
     }
   };
 
@@ -88,17 +74,21 @@ export default function CartPage() {
     console.log("🗑️ 장바구니 아이템 삭제:", itemId);
 
     try {
-      const { error } = await supabase
-        .from("cart_items")
-        .delete()
-        .eq("id", itemId);
+      const result = await removeCartItem(itemId);
 
-      if (error) throw error;
-
-      await loadCartItems();
+      if (result.success) {
+        console.log("✅ 삭제 성공");
+        await loadCartItems();
+        
+        // Navbar에 장바구니 변경 알림 (실시간 갱신)
+        window.dispatchEvent(new CustomEvent("cart-updated"));
+      } else {
+        console.error("❌ 삭제 실패:", result.error);
+        alert(result.error || "삭제에 실패했습니다.");
+      }
     } catch (error) {
-      console.error("❌ 삭제 실패:", error);
-      alert("삭제에 실패했습니다.");
+      console.error("❌ 삭제 중 오류 발생:", error);
+      alert("삭제에 실패했습니다. 다시 시도해주세요.");
     }
   };
 

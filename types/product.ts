@@ -23,6 +23,9 @@ export interface Product {
   stock_quantity: number;
   image_url: string | null;
   category: ProductCategory;
+  ingredients: string | null; // 주요 성분
+  dosage: string | null; // 복용법 및 용법용량
+  precautions: string | null; // 주의사항 및 부작용
   created_at: string;
   updated_at: string;
 }

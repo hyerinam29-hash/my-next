@@ -27,7 +27,10 @@ export default async function OrderDetailPage({
 
   const { data: orderItems, error: itemsError } = await supabase
     .from("order_items")
-    .select("*")
+    .select(`
+      *,
+      product:products(name)
+    `)
     .eq("order_id", orderId);
 
   if (itemsError) {
@@ -37,14 +40,29 @@ export default async function OrderDetailPage({
   console.groupEnd();
 
   const statusMap: Record<string, string> = {
-    pending: "결제 대기",
-    confirmed: "주문 확인",
-    shipped: "배송 중",
-    delivered: "배송 완료",
-    cancelled: "취소됨",
+    Pending: "결제 대기",
+    Processing: "주문 확인",
+    Shipped: "배송 중",
+    Delivered: "배송 완료",
+    Cancelled: "취소됨",
+    Refunded: "환불됨",
   };
 
-  const shippingAddress = order.shipping_address as any;
+  // shipping_address를 JSON으로 파싱
+  let shippingAddress: any = null;
+  try {
+    if (order.shipping_address) {
+      if (typeof order.shipping_address === "string") {
+        shippingAddress = JSON.parse(order.shipping_address);
+      } else {
+        shippingAddress = order.shipping_address;
+      }
+    }
+  } catch (error) {
+    console.warn("⚠️ 배송 주소 파싱 실패:", error);
+    // 파싱 실패 시 원본 텍스트 사용
+    shippingAddress = { address: order.shipping_address };
+  }
 
   return (
     <main className="min-h-[calc(100vh-80px)] px-4 py-8 lg:py-12">
@@ -92,22 +110,26 @@ export default async function OrderDetailPage({
           <section className="border rounded-lg p-6">
             <h2 className="text-2xl font-bold mb-4">주문 상품</h2>
             <div className="space-y-4">
-              {orderItems?.map((item) => (
-                <div key={item.id} className="flex justify-between">
-                  <div>
-                    <p className="font-semibold">{item.product_name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      수량: {item.quantity}개
+              {orderItems?.map((item: any) => {
+                const productName =
+                  item.product?.name || "상품 정보 없음";
+                return (
+                  <div key={item.id} className="flex justify-between">
+                    <div>
+                      <p className="font-semibold">{productName}</p>
+                      <p className="text-sm text-muted-foreground">
+                        수량: {item.quantity}개
+                      </p>
+                    </div>
+                    <p className="font-semibold">
+                      {new Intl.NumberFormat("ko-KR", {
+                        style: "currency",
+                        currency: "KRW",
+                      }).format(Number(item.price_at_purchase) * item.quantity)}
                     </p>
                   </div>
-                  <p className="font-semibold">
-                    {new Intl.NumberFormat("ko-KR", {
-                      style: "currency",
-                      currency: "KRW",
-                    }).format(Number(item.price) * item.quantity)}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
 
