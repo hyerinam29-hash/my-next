@@ -12,24 +12,25 @@ import { Button } from "@/components/ui/button";
  * 카테고리 네비게이션과 베스트 상품 섹션을 포함합니다.
  */
 
-// 시니어 영양제 카테고리 한글 매핑
-const categoryMap: Record<string, string> = {
-  "Joint & Bone Health": "관절/뼈 건강",
-  "Immune Support": "면역 지원",
-  "Multivitamin & Mineral": "종합 비타민/미네랄",
-  "Cognitive & Memory": "인지/기억력",
-  "Heart Health": "심장 건강",
-  "Digestive Health": "소화 건강",
-  "Eye Health": "눈 건강",
-  "Sleep & Stress": "수면/스트레스",
-  "Energy & Vitality": "에너지/활력",
+// 대표 카테고리 타입 정의
+type DisplayCategory = "all" | "multivitamin" | "immune" | "joint" | "others";
+
+// 대표 카테고리 한글 표시
+const displayCategoryMap: Record<DisplayCategory, string> = {
+  all: "전체",
+  multivitamin: "종합비타민/미네랄",
+  immune: "면역지원",
+  joint: "관절/뼈건강",
+  others: "기타",
 };
+
+// 표시할 카테고리 목록
+const displayCategories: DisplayCategory[] = ["multivitamin", "immune", "joint", "others"];
 
 export default async function Home() {
   console.group("🏠 홈페이지 상품 목록 조회 시작");
 
   let products: Product[] = [];
-  let categories: string[] = [];
 
   try {
     console.log("📦 Supabase에서 상품 데이터 조회 중...");
@@ -54,14 +55,8 @@ export default async function Home() {
 
     products = (allProductsData as Product[]) || [];
 
-    // 카테고리 추출
-    const uniqueCategories = Array.from(
-      new Set(products.map((p) => p.category).filter(Boolean))
-    ) as string[];
-    categories = uniqueCategories;
-
     console.log(`✅ ${products.length}개의 상품 조회 성공`);
-    console.log(`📂 ${categories.length}개의 카테고리 발견`);
+    console.log(`📂 표시 카테고리: ${displayCategories.length}개`);
   } catch (error) {
     console.error("❌ 상품 데이터 로드 중 오류 발생:", error);
 
@@ -90,25 +85,23 @@ export default async function Home() {
         </section>
 
         {/* 카테고리 네비게이션 */}
-        {categories.length > 0 && (
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold mb-6">카테고리</h2>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/products">
+        <section className="mb-12">
+          <h2 className="text-2xl font-bold mb-6">카테고리</h2>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/products">
+              <Button variant="outline" className="rounded-full">
+                전체
+              </Button>
+            </Link>
+            {displayCategories.map((category) => (
+              <Link key={category} href={`/products?category=${category}`}>
                 <Button variant="outline" className="rounded-full">
-                  전체
+                  {displayCategoryMap[category]}
                 </Button>
               </Link>
-              {categories.map((category) => (
-                <Link key={category} href={`/products?category=${category}`}>
-                  <Button variant="outline" className="rounded-full">
-                    {categoryMap[category] || category}
-                  </Button>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
+            ))}
+          </div>
+        </section>
 
         {/* 전체 상품 목록 그리드 */}
         <section>

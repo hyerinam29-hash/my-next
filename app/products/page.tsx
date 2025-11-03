@@ -11,17 +11,32 @@ import Link from "next/link";
  * 카테고리 필터링 및 페이지네이션을 지원하는 상품 목록 페이지입니다.
  */
 
-// 시니어 영양제 카테고리 한글 매핑
-const categoryMap: Record<string, string> = {
-  "Joint & Bone Health": "관절/뼈 건강",
-  "Immune Support": "면역 지원",
-  "Multivitamin & Mineral": "종합 비타민/미네랄",
-  "Cognitive & Memory": "인지/기억력",
-  "Heart Health": "심장 건강",
-  "Digestive Health": "소화 건강",
-  "Eye Health": "눈 건강",
-  "Sleep & Stress": "수면/스트레스",
-  "Energy & Vitality": "에너지/활력",
+// 대표 카테고리 타입 정의
+type DisplayCategory = "all" | "multivitamin" | "immune" | "joint" | "others";
+
+// 대표 카테고리 한글 표시
+const displayCategoryMap: Record<DisplayCategory, string> = {
+  all: "전체",
+  multivitamin: "종합비타민/미네랄",
+  immune: "면역지원",
+  joint: "관절/뼈건강",
+  others: "기타",
+};
+
+// 대표 카테고리에 속하는 원본 카테고리 목록
+const categoryGroups: Record<DisplayCategory, string[]> = {
+  all: [], // 전체는 모든 카테고리 포함
+  multivitamin: ["Multivitamin & Mineral"],
+  immune: ["Immune Support"],
+  joint: ["Joint & Bone Health"],
+  others: [
+    "Cognitive & Memory",
+    "Heart Health",
+    "Digestive Health",
+    "Eye Health",
+    "Sleep & Stress",
+    "Energy & Vitality",
+  ],
 };
 
 interface ProductsPageProps {
@@ -39,29 +54,22 @@ export default async function ProductsPage({
   console.group("📦 상품 목록 페이지 조회");
 
   let products: Product[] = [];
-  let categories: string[] = [];
+  let displayCategories: DisplayCategory[] = ["multivitamin", "immune", "joint", "others"];
   let totalCount = 0;
 
   try {
-    // 카테고리 목록 조회
-    const { data: allProducts } = await supabase
-      .from("products")
-      .select("category");
-
-    if (allProducts) {
-      const uniqueCategories = Array.from(
-        new Set(allProducts.map((p) => p.category).filter(Boolean))
-      ) as string[];
-      categories = uniqueCategories;
-    }
-
     // 상품 조회 (카테고리 필터링)
     let query = supabase
       .from("products")
       .select("*", { count: "exact" });
 
-    if (category) {
-      query = query.eq("category", category);
+    // 대표 카테고리로 필터링
+    if (category && category !== "all") {
+      const categoryKey = category as DisplayCategory;
+      const originalCategories = categoryGroups[categoryKey] || [];
+      if (originalCategories.length > 0) {
+        query = query.in("category", originalCategories);
+      }
     }
 
     const { data, error, count } = await query
@@ -92,9 +100,9 @@ export default async function ProductsPage({
         {/* 헤더 */}
         <section className="mb-8">
           <h1 className="text-4xl font-bold mb-4">상품 목록</h1>
-          {category && (
+          {category && category !== "all" && (
             <p className="text-muted-foreground">
-              카테고리: {categoryMap[category] || category}
+              카테고리: {displayCategoryMap[category as DisplayCategory] || category}
             </p>
           )}
         </section>
@@ -104,19 +112,19 @@ export default async function ProductsPage({
           <div className="flex flex-wrap gap-3">
             <Link href="/products">
               <Button
-                variant={!category ? "default" : "outline"}
+                variant={!category || category === "all" ? "default" : "outline"}
                 className="rounded-full"
               >
                 전체
               </Button>
             </Link>
-            {categories.map((cat) => (
+            {displayCategories.map((cat) => (
               <Link key={cat} href={`/products?category=${cat}`}>
                 <Button
                   variant={category === cat ? "default" : "outline"}
                   className="rounded-full"
                 >
-                  {categoryMap[cat] || cat}
+                  {displayCategoryMap[cat]}
                 </Button>
               </Link>
             ))}
@@ -138,7 +146,7 @@ export default async function ProductsPage({
             {totalPages > 1 && (
               <section className="flex justify-center items-center gap-2">
                 {currentPage > 1 && (
-                  <Link href={`/products?page=${currentPage - 1}${category ? `&category=${category}` : ""}`}>
+                  <Link href={`/products?page=${currentPage - 1}${category ? `&category=${category}` : "&category=all"}`}>
                     <Button variant="outline">이전</Button>
                   </Link>
                 )}
@@ -146,7 +154,7 @@ export default async function ProductsPage({
                   페이지 {currentPage} / {totalPages}
                 </span>
                 {currentPage < totalPages && (
-                  <Link href={`/products?page=${currentPage + 1}${category ? `&category=${category}` : ""}`}>
+                  <Link href={`/products?page=${currentPage + 1}${category ? `&category=${category}` : "&category=all"}`}>
                     <Button variant="outline">다음</Button>
                   </Link>
                 )}
