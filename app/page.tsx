@@ -55,27 +55,16 @@ export default async function Home({ searchParams }: HomeProps) {
   console.group("🏠 홈페이지 상품 목록 조회 시작");
 
   let products: Product[] = [];
+  let bestProducts: Product[] = [];
 
   try {
     console.log("📦 Supabase에서 상품 데이터 조회 중...");
     console.log(`🔍 필터링 카테고리: ${category}`);
 
-    // 상품 조회 쿼리 생성
-    let query = supabase.from("products").select("*");
-
-    // 카테고리 필터링 적용
-    if (category && category !== "all") {
-      const originalCategories = categoryGroups[category] || [];
-      if (originalCategories.length > 0) {
-        query = query.in("category", originalCategories);
-        console.log(`📂 필터링 대상 카테고리: ${originalCategories.join(", ")}`);
-      }
-    }
-
-    const { data: allProductsData, error: allProductsError } = await query.order(
-      "created_at",
-      { ascending: false }
-    );
+    // 전체 상품 조회 (베스트 상품용)
+    const { data: allProductsData, error: allProductsError } = await supabase
+      .from("products")
+      .select("*");
 
     if (allProductsError) {
       console.error("❌ 상품 조회 실패:", allProductsError);
@@ -89,9 +78,39 @@ export default async function Home({ searchParams }: HomeProps) {
       throw allProductsError;
     }
 
-    products = (allProductsData as Product[]) || [];
+    const allProducts = (allProductsData as Product[]) || [];
 
-    console.log(`✅ ${products.length}개의 상품 조회 성공`);
+    // 베스트 상품 (가격이 높은 상위 4개)
+    bestProducts = [...allProducts]
+      .sort((a, b) => Number(b.price) - Number(a.price))
+      .slice(0, 4);
+
+    console.log(`🏆 ${bestProducts.length}개의 베스트 상품 조회 성공`);
+
+    // 카테고리 필터링 적용된 상품 조회
+    let query = supabase.from("products").select("*");
+
+    if (category && category !== "all") {
+      const originalCategories = categoryGroups[category] || [];
+      if (originalCategories.length > 0) {
+        query = query.in("category", originalCategories);
+        console.log(`📂 필터링 대상 카테고리: ${originalCategories.join(", ")}`);
+      }
+    }
+
+    const { data: filteredProductsData, error: filteredProductsError } = await query.order(
+      "created_at",
+      { ascending: false }
+    );
+
+    if (filteredProductsError) {
+      console.error("❌ 필터링된 상품 조회 실패:", filteredProductsError);
+      throw filteredProductsError;
+    }
+
+    products = (filteredProductsData as Product[]) || [];
+
+    console.log(`✅ ${products.length}개의 필터링된 상품 조회 성공`);
     console.log(`📂 선택된 필터: ${category}`);
   } catch (error) {
     console.error("❌ 상품 데이터 로드 중 오류 발생:", error);
@@ -138,6 +157,23 @@ export default async function Home({ searchParams }: HomeProps) {
             ))}
           </div>
         </section>
+
+        {/* 베스트 상품 섹션 */}
+        {bestProducts.length > 0 && (
+          <section className="mb-12">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold">베스트 상품</h2>
+              <Link href="/best">
+                <Button variant="ghost">더보기 →</Button>
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+              {bestProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* 전체 상품 목록 그리드 */}
         <section>
