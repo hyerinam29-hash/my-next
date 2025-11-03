@@ -66,15 +66,15 @@ export default async function ProductDetailPage({
   }).format(Number(product.price));
 
   return (
-    <main className="min-h-[calc(100vh-80px)] px-4 py-8 lg:py-12">
-      <div className="max-w-7xl mx-auto">
+    <main className="min-h-[calc(100vh-80px)] px-0 py-10 lg:py-16">
+      <div className="max-w-[1400px] mx-auto">
         <Link href="/products">
           <Button variant="ghost" className="mb-6">
             ← 상품 목록으로
           </Button>
         </Link>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 mb-12">
           {/* 이미지 영역 */}
           <div className="w-full aspect-square bg-muted rounded-lg flex items-center justify-center">
             {product.image_url ? (
@@ -84,7 +84,7 @@ export default async function ProductDetailPage({
                 className="w-full h-full object-cover rounded-lg"
               />
             ) : (
-              <ImageIcon className="w-32 h-32 text-muted-foreground/50" />
+              <ImageIcon className="w-60 h-60 text-muted-foreground/50" />
             )}
           </div>
 
@@ -95,8 +95,8 @@ export default async function ProductDetailPage({
                 {product.category}
               </span>
             )}
-            <h1 className="text-4xl font-bold">{product.name}</h1>
-            <p className="text-3xl font-bold text-primary">{formattedPrice}</p>
+            <h1 className="text-5xl font-bold">{product.name}</h1>
+            <p className="text-4xl font-bold text-primary">{formattedPrice}</p>
 
             {product.description && (
               <div>

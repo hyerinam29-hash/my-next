@@ -16,6 +16,51 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, className }: ProductCardProps) {
+  // 카테고리별 크기/여백/폰트 스타일 매핑 (여기만 수정하면 전체 반영)
+  const CATEGORY_STYLE: Record<string, {
+    cardPadding: string;
+    titleSize: string;
+    descSize: string;
+    priceSize: string;
+    badgeSize: string;
+    placeholderSize: string; // w-20 h-20 형태
+  }> = {
+    "Multivitamin & Mineral": {
+      cardPadding: "p-7",
+      titleSize: "text-3xl",
+      descSize: "text-lg",
+      priceSize: "text-3xl",
+      badgeSize: "text-sm",
+      placeholderSize: "w-24 h-24",
+    },
+    "Immune Support": {
+      cardPadding: "p-6",
+      titleSize: "text-2xl",
+      descSize: "text-base",
+      priceSize: "text-3xl",
+      badgeSize: "text-sm",
+      placeholderSize: "w-20 h-20",
+    },
+    "Joint & Bone Health": {
+      cardPadding: "p-6",
+      titleSize: "text-2xl",
+      descSize: "text-base",
+      priceSize: "text-3xl",
+      badgeSize: "text-sm",
+      placeholderSize: "w-20 h-20",
+    },
+    default: {
+      cardPadding: "p-6",
+      titleSize: "text-2xl",
+      descSize: "text-base",
+      priceSize: "text-2xl lg:text-3xl",
+      badgeSize: "text-sm",
+      placeholderSize: "w-20 h-20",
+    },
+  };
+
+  const style = CATEGORY_STYLE[product.category] || CATEGORY_STYLE.default;
+
   // 가격을 한국 원화 형식으로 포맷팅
   const formattedPrice = new Intl.NumberFormat("ko-KR", {
     style: "currency",
@@ -24,7 +69,7 @@ export default function ProductCard({ product, className }: ProductCardProps) {
 
   return (
     <Link href={`/products/${product.id}`} className={cn(
-      "group flex flex-col bg-card border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer block",
+      "group flex flex-col bg-card border rounded-lg overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer block",
       className
     )}>
       {/* 상품 이미지 (없을 경우 "no image" 표시) */}
@@ -51,7 +96,7 @@ export default function ProductCard({ product, className }: ProductCardProps) {
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <div className="text-center">
-              <ImageIcon className="w-16 h-16 mx-auto mb-2 text-muted-foreground" />
+              <ImageIcon className={`${style.placeholderSize} mx-auto mb-2 text-muted-foreground`} />
               <p className="text-sm text-muted-foreground">No Image</p>
             </div>
           </div>
@@ -60,29 +105,29 @@ export default function ProductCard({ product, className }: ProductCardProps) {
       </div>
 
       {/* 상품 정보 */}
-      <div className="p-4 flex flex-col gap-2">
+      <div className={cn("flex flex-col gap-3", style.cardPadding)}>
         {/* 카테고리 */}
         {product.category && (
-          <span className="text-xs text-muted-foreground uppercase tracking-wide">
+          <span className={cn("text-muted-foreground uppercase tracking-wide", style.badgeSize)}>
             {product.category}
           </span>
         )}
 
         {/* 상품명 */}
-        <h3 className="font-semibold text-lg line-clamp-2 group-hover:text-primary transition-colors">
+        <h3 className={cn("font-semibold line-clamp-2 group-hover:text-primary transition-colors", style.titleSize)}>
           {product.name}
         </h3>
 
         {/* 상품 설명 (선택적) */}
         {product.description && (
-          <p className="text-sm text-muted-foreground line-clamp-2">
+          <p className={cn("text-muted-foreground line-clamp-2", style.descSize)}>
             {product.description}
           </p>
         )}
 
         {/* 가격 및 재고 정보 */}
         <div className="flex items-center justify-between mt-auto pt-2">
-          <span className="text-xl font-bold text-primary">{formattedPrice}</span>
+          <span className={cn("font-bold text-primary", style.priceSize)}>{formattedPrice}</span>
           {product.stock_quantity > 0 ? (
             <span className="text-xs text-muted-foreground">
               재고 {product.stock_quantity}개

@@ -282,25 +282,20 @@ export default async function ProductsPage({
   };
 
   return (
-    <main className="min-h-[calc(100vh-80px)] px-4 py-8 lg:py-12">
-      <div className="max-w-7xl mx-auto">
+    <main className="min-h-[calc(100vh-80px)] px-0 py-10 lg:py-16">
+      <div className="max-w-[1400px] mx-auto">
         {/* 헤더 */}
-        <section className="mb-8">
-          <h1 className="text-4xl font-bold mb-4">상품 목록</h1>
-          {category && category !== "all" && (
-            <p className="text-muted-foreground">
-              카테고리: {displayCategoryMap[category] || category}
-            </p>
-          )}
+        <section className="mb-10">
+          <h1 className="text-6xl font-bold mb-5">상품 목록</h1>
         </section>
 
         {/* 카테고리 필터 */}
-        <section className="mb-8">
-          <div className="flex flex-wrap gap-3">
+        <section className="mb-10">
+          <div className="flex flex-wrap gap-4">
             <Link href={getCategoryUrl("all")}>
               <Button
                 variant={category === "all" ? "default" : "outline"}
-                className="rounded-full"
+                className="rounded-full text-lg"
               >
                 전체
               </Button>
@@ -309,7 +304,7 @@ export default async function ProductsPage({
               <Link key={cat} href={getCategoryUrl(cat)}>
                 <Button
                   variant={category === cat ? "default" : "outline"}
-                  className="rounded-full"
+                  className="rounded-full text-lg"
                 >
                   {displayCategoryMap[cat]}
                 </Button>

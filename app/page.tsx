@@ -127,14 +127,14 @@ export default async function Home({ searchParams }: HomeProps) {
   console.groupEnd();
 
   return (
-    <main className="min-h-[calc(100vh-80px)] px-4 py-8 lg:py-12">
-      <div className="max-w-7xl mx-auto">
+    <main className="min-h-[calc(100vh-80px)] px-0 py-10 lg:py-16">
+      <div className="max-w-[1400px] mx-auto">
         {/* 헤더 섹션 */}
-        <section className="mb-12 text-center">
-              <h1 className="text-4xl lg:text-5xl font-bold mb-4">
+        <section className="mb-15 text-center">
+              <h1 className="text-7xl lg:text-7xl font-bold mb-6">
                 시니어 영양제 쇼핑몰
               </h1>
-              <p className="text-lg text-muted-foreground">
+              <p className="text-xl lg:text-2xl text-muted-foreground">
                 건강하고 활기찬 노후 생활을 위한 전문 영양제
               </p>
         </section>
@@ -160,14 +160,14 @@ export default async function Home({ searchParams }: HomeProps) {
 
         {/* 베스트 상품 섹션 */}
         {bestProducts.length > 0 && (
-          <section className="mb-12">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">베스트 상품</h2>
+          <section className="mb-14">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-3xl lg:text-4xl font-extrabold tracking-tight">베스트 상품</h2>
               <Link href="/best">
-                <Button variant="ghost">더보기 →</Button>
+                <Button variant="ghost" className="text-lg">더보기 →</Button>
               </Link>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-10 lg:gap-12">
               {bestProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -177,10 +177,10 @@ export default async function Home({ searchParams }: HomeProps) {
 
         {/* 전체 상품 목록 그리드 */}
         <section>
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-3xl font-bold">전체 상품</h1>
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-4xl font-extrabold tracking-tight">전체 상품</h1>
             <Link href="/products">
-              <Button variant="ghost">더보기 →</Button>
+              <Button variant="ghost" className="text-lg">더보기 →</Button>
             </Link>
           </div>
           
@@ -190,7 +190,7 @@ export default async function Home({ searchParams }: HomeProps) {
           </Suspense>
 
           {products.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 lg:gap-10">
               {products.slice(0, 8).map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}

@@ -32,11 +32,13 @@ export default function RootLayout({
     <ClerkProvider localization={koKR}>
       <html lang="ko">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased text-[17px] md:text-[18px]`}
         >
           <SyncUserProvider>
             <Navbar />
-            {children}
+            <div className="mx-auto w-full max-w-[1600px] px-0">
+              {children}
+            </div>
             <Footer />
           </SyncUserProvider>
         </body>
