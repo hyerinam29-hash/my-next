@@ -33,6 +33,18 @@ const categoryGroups: Record<DisplayCategory, string[]> = {
   ],
 };
 
+// 대표 카테고리 한글 표시
+const displayCategoryMap: Record<DisplayCategory, string> = {
+  all: "전체",
+  multivitamin: "종합비타민/미네랄",
+  immune: "면역지원",
+  joint: "관절/뼈건강",
+  others: "기타",
+};
+
+// 표시할 카테고리 목록
+const displayCategories: DisplayCategory[] = ["multivitamin", "immune", "joint", "others"];
+
 interface HomeProps {
   searchParams: Promise<{ category?: string }>;
 }
