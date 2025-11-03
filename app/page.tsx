@@ -3,6 +3,8 @@ import ProductCard from "@/components/product-card";
 import type { Product } from "@/types/product";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import HomeProductFilter from "@/components/home-product-filter";
+import { Suspense } from "react";
 
 /**
  * @file app/page.tsx
@@ -15,31 +17,53 @@ import { Button } from "@/components/ui/button";
 // 대표 카테고리 타입 정의
 type DisplayCategory = "all" | "multivitamin" | "immune" | "joint" | "others";
 
-// 대표 카테고리 한글 표시
-const displayCategoryMap: Record<DisplayCategory, string> = {
-  all: "전체",
-  multivitamin: "종합비타민/미네랄",
-  immune: "면역지원",
-  joint: "관절/뼈건강",
-  others: "기타",
+// 대표 카테고리에 속하는 원본 카테고리 목록
+const categoryGroups: Record<DisplayCategory, string[]> = {
+  all: [], // 전체는 모든 카테고리 포함
+  multivitamin: ["Multivitamin & Mineral"],
+  immune: ["Immune Support"],
+  joint: ["Joint & Bone Health"],
+  others: [
+    "Cognitive & Memory",
+    "Heart Health",
+    "Digestive Health",
+    "Eye Health",
+    "Sleep & Stress",
+    "Energy & Vitality",
+  ],
 };
 
-// 표시할 카테고리 목록
-const displayCategories: DisplayCategory[] = ["multivitamin", "immune", "joint", "others"];
+interface HomeProps {
+  searchParams: Promise<{ category?: string }>;
+}
 
-export default async function Home() {
+export default async function Home({ searchParams }: HomeProps) {
+  const params = await searchParams;
+  const category = (params.category || "all") as DisplayCategory;
   console.group("🏠 홈페이지 상품 목록 조회 시작");
 
   let products: Product[] = [];
 
   try {
     console.log("📦 Supabase에서 상품 데이터 조회 중...");
+    console.log(`🔍 필터링 카테고리: ${category}`);
 
-    // 전체 상품 조회 (is_active 필드가 없으므로 모든 상품 조회)
-    const { data: allProductsData, error: allProductsError } = await supabase
-      .from("products")
-      .select("*")
-      .order("created_at", { ascending: false });
+    // 상품 조회 쿼리 생성
+    let query = supabase.from("products").select("*");
+
+    // 카테고리 필터링 적용
+    if (category && category !== "all") {
+      const originalCategories = categoryGroups[category] || [];
+      if (originalCategories.length > 0) {
+        query = query.in("category", originalCategories);
+        console.log(`📂 필터링 대상 카테고리: ${originalCategories.join(", ")}`);
+      }
+    }
+
+    const { data: allProductsData, error: allProductsError } = await query.order(
+      "created_at",
+      { ascending: false }
+    );
 
     if (allProductsError) {
       console.error("❌ 상품 조회 실패:", allProductsError);
@@ -56,7 +80,7 @@ export default async function Home() {
     products = (allProductsData as Product[]) || [];
 
     console.log(`✅ ${products.length}개의 상품 조회 성공`);
-    console.log(`📂 표시 카테고리: ${displayCategories.length}개`);
+    console.log(`📂 선택된 필터: ${category}`);
   } catch (error) {
     console.error("❌ 상품 데이터 로드 중 오류 발생:", error);
 
@@ -105,12 +129,18 @@ export default async function Home() {
 
         {/* 전체 상품 목록 그리드 */}
         <section>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">전체 상품</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-3xl font-bold">전체 상품</h1>
             <Link href="/products">
               <Button variant="ghost">더보기 →</Button>
             </Link>
           </div>
+          
+          {/* 카테고리 필터링 버튼 */}
+          <Suspense fallback={<div className="h-12" />}>
+            <HomeProductFilter />
+          </Suspense>
+
           {products.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
               {products.slice(0, 8).map((product) => (
