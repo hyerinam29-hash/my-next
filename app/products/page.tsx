@@ -43,8 +43,7 @@ export default async function ProductsPage({
     // 카테고리 목록 조회
     const { data: allProducts } = await supabase
       .from("products")
-      .select("category")
-      .eq("is_active", true);
+      .select("category");
 
     if (allProducts) {
       const uniqueCategories = Array.from(
@@ -56,8 +55,7 @@ export default async function ProductsPage({
     // 상품 조회 (카테고리 필터링)
     let query = supabase
       .from("products")
-      .select("*", { count: "exact" })
-      .eq("is_active", true);
+      .select("*", { count: "exact" });
 
     if (category) {
       query = query.eq("category", category);
