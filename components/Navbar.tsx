@@ -13,6 +13,9 @@ const Navbar = () => {
         <Link href="/products">
           <Button variant="ghost">상품</Button>
         </Link>
+        <Link href="/best">
+          <Button variant="ghost">베스트 상품</Button>
+        </Link>
         <SignedIn>
           <Link href="/cart">
             <Button variant="ghost">장바구니</Button>

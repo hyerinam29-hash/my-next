@@ -30,7 +30,6 @@ export default async function Home() {
 
   let products: Product[] = [];
   let categories: string[] = [];
-  let bestProducts: Product[] = [];
 
   try {
     console.log("📦 Supabase에서 상품 데이터 조회 중...");
@@ -61,14 +60,8 @@ export default async function Home() {
     ) as string[];
     categories = uniqueCategories;
 
-    // 베스트 상품 (가격이 높은 상위 4개)
-    bestProducts = [...products]
-      .sort((a, b) => Number(b.price) - Number(a.price))
-      .slice(0, 4);
-
     console.log(`✅ ${products.length}개의 상품 조회 성공`);
     console.log(`📂 ${categories.length}개의 카테고리 발견`);
-    console.log("🏆 베스트 상품:", bestProducts.map((p) => p.name));
   } catch (error) {
     console.error("❌ 상품 데이터 로드 중 오류 발생:", error);
 
@@ -112,18 +105,6 @@ export default async function Home() {
                     {categoryMap[category] || category}
                   </Button>
                 </Link>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* 베스트 상품 섹션 */}
-        {bestProducts.length > 0 && (
-          <section className="mb-12">
-            <h2 className="text-2xl font-bold mb-6">베스트 상품</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-              {bestProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
               ))}
             </div>
           </section>

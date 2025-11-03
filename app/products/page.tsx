@@ -11,14 +11,17 @@ import Link from "next/link";
  * 카테고리 필터링 및 페이지네이션을 지원하는 상품 목록 페이지입니다.
  */
 
+// 시니어 영양제 카테고리 한글 매핑
 const categoryMap: Record<string, string> = {
-  electronics: "전자제품",
-  clothing: "의류",
-  books: "도서",
-  food: "식품",
-  sports: "스포츠",
-  beauty: "뷰티",
-  home: "생활/가정",
+  "Joint & Bone Health": "관절/뼈 건강",
+  "Immune Support": "면역 지원",
+  "Multivitamin & Mineral": "종합 비타민/미네랄",
+  "Cognitive & Memory": "인지/기억력",
+  "Heart Health": "심장 건강",
+  "Digestive Health": "소화 건강",
+  "Eye Health": "눈 건강",
+  "Sleep & Stress": "수면/스트레스",
+  "Energy & Vitality": "에너지/활력",
 };
 
 interface ProductsPageProps {
