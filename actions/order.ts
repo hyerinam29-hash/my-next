@@ -127,10 +127,12 @@ export async function createOrder(
     // 4. 장바구니 아이템 조회
     const cartResult = await getCartItems();
     if (!cartResult.success || !cartResult.data) {
-      console.error("❌ 장바구니 조회 실패:", cartResult.error);
+      const errorMessage =
+        cartResult.success === false ? cartResult.error : "장바구니를 불러올 수 없습니다.";
+      console.error("❌ 장바구니 조회 실패:", errorMessage);
       return {
         success: false,
-        error: cartResult.error || "장바구니를 불러올 수 없습니다.",
+        error: errorMessage,
       };
     }
 

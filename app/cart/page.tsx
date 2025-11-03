@@ -34,7 +34,8 @@ export default function CartPage() {
         setCartItems(result.data);
         console.log(`✅ ${result.data.length}개 아이템 조회 성공`);
       } else {
-        console.error("❌ 장바구니 조회 실패:", result.error);
+        const errorMessage = result.success === false ? result.error : "알 수 없는 오류";
+        console.error("❌ 장바구니 조회 실패:", errorMessage);
         setCartItems([]);
       }
     } catch (error) {
@@ -61,8 +62,10 @@ export default function CartPage() {
         // Navbar에 장바구니 변경 알림 (실시간 갱신)
         window.dispatchEvent(new CustomEvent("cart-updated"));
       } else {
-        console.error("❌ 수량 변경 실패:", result.error);
-        alert(result.error || "수량 변경에 실패했습니다.");
+        // 타입 가드: result.success === false이면 result.error가 존재함
+        const errorMessage = "error" in result ? result.error : "수량 변경에 실패했습니다.";
+        console.error("❌ 수량 변경 실패:", errorMessage);
+        alert(errorMessage);
       }
     } catch (error) {
       console.error("❌ 수량 변경 중 오류 발생:", error);
@@ -83,8 +86,10 @@ export default function CartPage() {
         // Navbar에 장바구니 변경 알림 (실시간 갱신)
         window.dispatchEvent(new CustomEvent("cart-updated"));
       } else {
-        console.error("❌ 삭제 실패:", result.error);
-        alert(result.error || "삭제에 실패했습니다.");
+        // 타입 가드: result.success === false이면 result.error가 존재함
+        const errorMessage = "error" in result ? result.error : "삭제에 실패했습니다.";
+        console.error("❌ 삭제 실패:", errorMessage);
+        alert(errorMessage);
       }
     } catch (error) {
       console.error("❌ 삭제 중 오류 발생:", error);

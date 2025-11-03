@@ -92,9 +92,10 @@ export default function AddToCartButton({ product }: AddToCartButtonProps) {
         alert(result.message || "장바구니에 추가되었습니다!");
         router.push("/cart");
       } else {
-        console.error("❌ 장바구니 추가 실패:", result.error);
+        const errorMessage = "error" in result ? result.error : "장바구니 추가에 실패했습니다. 다시 시도해주세요.";
+        console.error("❌ 장바구니 추가 실패:", errorMessage);
         console.groupEnd();
-        alert(result.error || "장바구니 추가에 실패했습니다. 다시 시도해주세요.");
+        alert(errorMessage);
       }
     } catch (error) {
       console.error("❌ 장바구니 추가 중 오류 발생:", error);

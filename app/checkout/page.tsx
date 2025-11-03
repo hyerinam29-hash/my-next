@@ -53,6 +53,7 @@ export default function CheckoutPage() {
       setLoading(false);
       router.push("/sign-in");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isSignedIn]);
 
   const loadCartItems = async () => {
@@ -65,7 +66,8 @@ export default function CheckoutPage() {
         setCartItems(result.data);
         console.log(`✅ ${result.data.length}개 아이템 조회 성공`);
       } else {
-        console.error("❌ 장바구니 조회 실패:", result.error);
+        const errorMessage = "error" in result ? result.error : "장바구니를 불러올 수 없습니다.";
+        console.error("❌ 장바구니 조회 실패:", errorMessage);
         setCartItems([]);
       }
     } catch (error) {
@@ -100,8 +102,9 @@ export default function CheckoutPage() {
       });
 
       if (!result.success) {
-        console.error("❌ 주문 생성 실패:", result.error);
-        setError(result.error);
+        const errorMessage = "error" in result ? result.error : "주문 생성에 실패했습니다.";
+        console.error("❌ 주문 생성 실패:", errorMessage);
+        setError(errorMessage);
         return;
       }
 
