@@ -97,6 +97,18 @@
   - [x] 주문 데이터베이스 저장
   - [x] 주문 아이템 저장
 
+#### 진행 업데이트 (2025-11-03)
+- [x] 주문 생성 실패 원인 식별: `orders` 스키마에 없는 컬럼 `order_note` 인서트로 인한 에러
+- [x] 서버 액션 수정: `actions/order.ts`에서 `order_note` 필드 제거 (스키마 변경 없이 해결)
+- [x] 에러 가시성 강화: Supabase 에러의 `message/details/hint` 및 raw JSON 로그 출력 추가
+  - 주문 생성 실패, 주문 아이템 생성 실패, 최상위 catch에서 상세 로그 노출
+- [ ] Toss Payments v1 연동 상세 구현
+  - [ ] successUrl/failUrl 페이지 구조 정리 (`/payment/[orderId]`, `/payment/fail`)
+  - [ ] success 리다이렉트 시 서버에서 승인(confirm) API 호출(Server Action)
+  - [ ] 승인 성공 시 `orders.status`를 `'confirmed'`로 업데이트 (스키마 변경 범위 검토)
+  - [ ] 실패 시 안내 UI 및 재시도/장바구니 이동 버튼 제공
+  - [ ] 핵심 로깅: Checkout 시작/요청 파라미터/리다이렉트 수신/승인 응답/DB 업데이트 결과
+
 ### Phase 5: 고객센터 & 관리자 (1-2일)
 - [ ] 고객센터 기능
   - [ ] 1:1 문의 게시판 (inquiries 테이블)

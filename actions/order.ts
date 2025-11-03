@@ -182,14 +182,19 @@ export async function createOrder(
         shipping_address: shippingAddressJson,
         recipient_name: request.shippingAddress.name,
         recipient_phone: request.shippingAddress.phone,
-        order_note: request.orderNote || null,
       })
       .select()
       .single();
 
     if (orderError || !order) {
       console.error("❌ 주문 생성 실패:", orderError);
-      throw orderError || new Error("주문 생성에 실패했습니다.");
+      try { console.error("[orderError raw]", JSON.stringify(orderError)); } catch {}
+      const message =
+        (orderError as any)?.message ||
+        (orderError as any)?.details ||
+        (orderError as any)?.hint ||
+        "주문 생성에 실패했습니다.";
+      throw new Error(message);
     }
 
     console.log("✅ 주문 생성 성공:", order.id);
@@ -208,9 +213,15 @@ export async function createOrder(
 
     if (itemsError) {
       console.error("❌ 주문 아이템 생성 실패:", itemsError);
+      try { console.error("[itemsError raw]", JSON.stringify(itemsError)); } catch {}
       // 주문 아이템 생성 실패 시 주문 삭제 (롤백)
       await supabase.from("orders").delete().eq("id", order.id);
-      throw itemsError;
+      const message =
+        (itemsError as any)?.message ||
+        (itemsError as any)?.details ||
+        (itemsError as any)?.hint ||
+        "주문 아이템 생성에 실패했습니다.";
+      throw new Error(message);
     }
 
     console.log(`✅ ${orderItems.length}개 주문 아이템 생성 성공`);
@@ -239,13 +250,16 @@ export async function createOrder(
     };
   } catch (error) {
     console.error("❌ 주문 생성 중 오류 발생:", error);
+    try { console.error("[catch error raw]", JSON.stringify(error)); } catch {}
     console.groupEnd();
+    const msg =
+      (error as any)?.message ||
+      (error as any)?.details ||
+      (error as any)?.hint ||
+      (error instanceof Error ? error.message : "주문 생성에 실패했습니다. 다시 시도해주세요.");
     return {
       success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "주문 생성에 실패했습니다. 다시 시도해주세요.",
+      error: msg,
     };
   }
 }
