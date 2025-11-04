@@ -110,6 +110,9 @@ const Navbar = () => {
           <Link href="/orders">
             <Button variant="ghost">주문내역</Button>
           </Link>
+          <Link href="/mypage">
+            <Button variant="ghost">마이페이지</Button>
+          </Link>
         </SignedIn>
         <SignedOut>
           <SignInButton mode="modal">
